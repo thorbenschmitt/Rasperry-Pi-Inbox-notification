@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "dependencies": {
+    "mmm-usonic": "^2.5.3",
     "pushsafer-notifications": "^0.1.7",
     "rpio": "^0.9.20"
   },
