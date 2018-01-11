@@ -1,30 +1,42 @@
 var rpio = require('rpio');
 var push = require('pushsafer-notifications');
-
-var PUSHSAVER_KEY = "INSERT_YOUR_KEY"; // your pushsave api key
-var PIN = 7; //listen on pin number
-var MIN_DELAY = 1000; // min delay between message send (in ms)
-
-
+var cfg = require('./config');
 
 var p = new push({
-    k: PUSHSAVER_KEY,
+    k: cfg.PUSHSAVER_KEY,
     debug: true
 });
-var msg = {
-    m: 'Hurra, die Post war da!',
-    s: '8',
-    v: '2',
-    i: '50'
-};
+var timeoutObj;
 var last_send = Date.now();
-rpio.open(PIN, rpio.INPUT, rpio.PULL_DOWN);
+rpio.open(cfg.PIN, rpio.INPUT, rpio.PULL_DOWN);
+rpio.open(cfg.RESET_PIN, rpio.INPUT, rpio.PULL_DOWN);
+rpio.open(cfg.LED_PIN, rpio.OUTPUT, rpio.HIGH);
+
 function pollcb(pin) {
-    if (rpio.read(pin) && Date.now() > last_send + MIN_DELAY) {
-        p.send(msg, function(err, result) {
+    if (rpio.read(pin) && Date.now() > last_send + cfg.MIN_DELAY) {
+        console.log("SEND");
+        p.send(cfg.MESSAGE, function(err, result) {
             console.log('RESULT', result);
         });
+        rpio.write(cfg.LED_PIN, rpio.LOW);
+
+        timeoutObj = setTimeout(resetLed, cfg.LED_TIMEOUT)
         last_send = Date.now();
     }
 }
-rpio.poll(PIN, pollcb);
+rpio.poll(cfg.PIN, pollcb);
+
+function resled(pin) {
+    if (rpio.read(pin)){
+        resetLed()
+    }
+}
+rpio.poll(cfg.RESET_PIN, resled);
+
+function resetLed() {
+    clearTimeout(timeoutObj);
+
+    console.log("RESET PIN");
+    rpio.write(cfg.LED_PIN, rpio.HIGH);
+
+}
