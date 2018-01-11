@@ -34,6 +34,6 @@
   ```
   node server.js
   ```
-  and wait for the postman
+  and wait for the postman :postbox:
 
-  (https://raw.githubusercontent.com/thorbenschmitt/Rasperry-Pi-Inbox-notification/master/md/sketch.png)
+![Image of the board](https://raw.githubusercontent.com/thorbenschmitt/Rasperry-Pi-Inbox-notification/master/md/sketch.png)
