@@ -11,14 +11,13 @@ var last_send = Date.now();
 rpio.open(cfg.PIN, rpio.INPUT, rpio.PULL_DOWN);
 rpio.open(cfg.RESET_PIN, rpio.INPUT, rpio.PULL_DOWN);
 rpio.open(cfg.LED_PIN, rpio.OUTPUT, rpio.HIGH);
+rpio.write(cfg.LED_PIN, rpio.LOW);
 
 function pollcb(pin) {
-    if (rpio.read(pin) && Date.now() > last_send + cfg.MIN_DELAY) {
+    if (!rpio.read(pin) && Date.now() > last_send + cfg.MIN_DELAY) {
         console.log("SEND");
-        p.send(cfg.MESSAGE, function(err, result) {
-            console.log('RESULT', result);
-        });
-        rpio.write(cfg.LED_PIN, rpio.LOW);
+        sendMessages()
+        rpio.write(cfg.LED_PIN, rpio.HIGH);
 
         timeoutObj = setTimeout(resetLed, cfg.LED_TIMEOUT)
         last_send = Date.now();
@@ -26,17 +25,23 @@ function pollcb(pin) {
 }
 rpio.poll(cfg.PIN, pollcb);
 
+function sendMessages() {
+    cfg.MESSAGES.forEach(function(element) {
+        p.send(element, function(err, result) {
+            console.log('RESULT', result);
+        });
+    });
+}
+
 function resled(pin) {
-    if (rpio.read(pin)){
+    if (rpio.read(pin)) {
         resetLed()
     }
 }
 rpio.poll(cfg.RESET_PIN, resled);
 
 function resetLed() {
-    clearTimeout(timeoutObj);
-
     console.log("RESET PIN");
-    rpio.write(cfg.LED_PIN, rpio.HIGH);
-
+    rpio.write(cfg.LED_PIN, rpio.LOW);
+    clearTimeout(timeoutObj);
 }
